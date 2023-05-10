@@ -10,6 +10,7 @@ on:
     - cron: "20 17 * * *" # Sets cron to scan every day at 17:20 UTC.
 jobs:
   scan:
+    if: github.actor!= 'dependabot-preview[bot]'
     name: gitleaks
     runs-on: ubuntu-latest
     steps:
