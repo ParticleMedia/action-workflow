@@ -19,9 +19,14 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
+      - run: pwd
+      - run: ls -la
+      - name: Run Vulnerable Code Scan
+        runs: |
+          /usr/local/bin/grype dir:. --only-fixed --by-cve --add-cpes-if-none
+      - name: Run gitleaks
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GIT_LEAKS_LICENSE}}
-      - run: pwd
-      - run: ls -la
+        run: |
+          /usr/local/bin/gitleaks detect --redact -v --exit-code=2 --log-level=warn --max-target-megabytes=10 --no-git
