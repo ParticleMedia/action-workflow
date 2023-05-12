@@ -6,13 +6,15 @@ on:
   push:
     branches: ["master", "main"]
   # Schedule the CI job (this method uses cron syntax):
-  schedule:
-    - cron: "20 17 * * *" # Sets cron to scan every day at 17:20 UTC.
+  #schedule:
+  #  - cron: "20 17 * * *" # Sets cron to scan every day at 17:20 UTC.
 jobs:
   scan:
     if: github.actor!= 'dependabot-preview[bot]'
-    name: gitleaks
-    runs-on: ubuntu-latest
+    name: scan
+    runs-on:
+      group: Checks
+      labels: checks
     steps:
       - uses: actions/checkout@v3
         with:
@@ -21,3 +23,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GIT_LEAKS_LICENSE}}
+      - run: pwd
+      - run: ls -la
