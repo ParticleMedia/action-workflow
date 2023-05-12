@@ -22,7 +22,7 @@ jobs:
       - run: pwd
       - run: ls -la
       - name: Run Vulnerable Code Scan
-        runs: |
+        run: |
           /usr/local/bin/grype dir:. --only-fixed --by-cve --add-cpes-if-none
       - name: Run gitleaks
         env:
