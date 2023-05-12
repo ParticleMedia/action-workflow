@@ -4,7 +4,7 @@ on:
   pull_request: {}
   # Scan mainline branches and report all findings:
   push:
-    branches: ["master", "main"]
+    branches: ["master", "main", "feature/**", "bugfix/**"]
   # Schedule the CI job (this method uses cron syntax):
   #schedule:
   #  - cron: "20 17 * * *" # Sets cron to scan every day at 17:20 UTC.
@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
       - run: pwd
       - run: ls -la
-      - name: Run Vulnerable Code Scan
+      - name: Run vulnerable code scan
         run: |
           /usr/local/bin/grype dir:. --only-fixed --by-cve --add-cpes-if-none
       - name: Run gitleaks
