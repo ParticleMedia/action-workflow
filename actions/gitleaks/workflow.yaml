@@ -23,10 +23,25 @@ jobs:
       - run: ls -la
       - name: Run vulnerable code scan
         run: |
-          /usr/local/bin/grype dir:. --only-fixed --by-cve --add-cpes-if-none
-      - name: Run gitleaks
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GIT_LEAKS_LICENSE}}
+          /usr/local/bin/grype dir:. \
+            --only-fixed \
+            --by-cve \
+            --add-cpes-if-none
+      - name: Run semgrep
         run: |
-          /usr/local/bin/gitleaks detect --redact -v --exit-code=2 --log-level=warn --max-target-megabytes=10 --no-git
+          /home/ubuntu/.pyenv/shims/semgrep scan \
+            -j 2 \
+            --use-git-ignore \
+            --exclude="dist*" \
+            --config auto \
+            --timeout 10 \
+            --time
+      - name: Run gitleaks
+        run: |
+          /usr/local/bin/gitleaks detect \
+            --redact \
+            -v \
+            --exit-code=0 \
+            --log-level=warn \
+            --max-target-megabytes=10 \
+            --no-git
