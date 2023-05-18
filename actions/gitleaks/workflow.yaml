@@ -49,12 +49,11 @@ jobs:
           body-regex: "Security scan is turned on for this repository.*"
 
       - name: Create comment
+        if: steps.fc.outputs.comment-id == ''
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          comment-id: ${{ steps.fc.outputs.comment-id }}
           body: |
             Security scan is turned on for this repository.
             Please go to [Actions](https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/actions/workflows/required/ParticleMedia/action-workflow/actions/gitleaks/workflow.yaml) check the findings and fix them.
           reactions: eyes
-          edit-mode: replace
