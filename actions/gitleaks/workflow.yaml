@@ -17,12 +17,16 @@ jobs:
       - run: pwd
       - run: ls -la
       - name: Run vulnerable code scan
+        id: grype-scan
         run: |
           /usr/local/bin/grype dir:. \
             --only-fixed \
             --by-cve \
+            --fail-on critical \
             --add-cpes-if-none
+        continue-on-error: true
       - name: Run semgrep
+        id: semgrep-scan
         run: |
           /home/ubuntu/.pyenv/shims/semgrep scan \
             -j 2 \
@@ -31,15 +35,17 @@ jobs:
             --config auto \
             --timeout 10 \
             --time
+        continue-on-error: true
       - name: Run gitleaks
+        id: gitleaks-scan
         run: |
           /usr/local/bin/gitleaks detect \
             --redact \
             -v \
-            --exit-code=0 \
             --log-level=warn \
             --max-target-megabytes=10 \
             --no-git
+        continue-on-error: true
       - name: Find Comment
         uses: peter-evans/find-comment@v2
         id: fc
@@ -49,11 +55,13 @@ jobs:
           body-regex: "Security scan is turned on for this repository.*"
 
       - name: Create comment
-        if: steps.fc.outputs.comment-id == ''
         uses: peter-evans/create-or-update-comment@v3
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             Security scan is turned on for this repository.
             Please go to [Actions](https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/actions/workflows/required/ParticleMedia/action-workflow/actions/gitleaks/workflow.yaml) check the findings and fix them.
+            - grype check ${{ steps.grype-scan.outcome }}
+            - semgrep check ${{ steps.semgrep-scan.outcome }}
+            - gitleaks check ${{ steps.gitleaks-scan.outcome }}
           reactions: eyes
