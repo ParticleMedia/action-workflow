@@ -35,6 +35,7 @@ jobs:
             --config auto \
             --timeout 10 \
             --time
+        timeout-minutes: 3
         continue-on-error: true
       - name: Run gitleaks
         id: gitleaks-scan
