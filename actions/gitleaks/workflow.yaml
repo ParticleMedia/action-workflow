@@ -2,6 +2,10 @@ name: git-scan
 on:
   # Scan changed files in PRs (diff-aware scanning):
   pull_request: {}
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
 jobs:
   scan:
     if: github.actor!= 'dependabot-preview[bot]'
