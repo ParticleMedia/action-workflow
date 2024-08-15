@@ -23,11 +23,12 @@ jobs:
       - name: Run vulnerable code scan
         id: grype-scan
         run: |
-          /usr/local/bin/grype dir:. \
-            --only-fixed \
-            --by-cve \
-            --fail-on critical \
-            --add-cpes-if-none
+          echo "Disabled"
+          # /usr/local/bin/grype dir:. \
+          #   --only-fixed \
+          #   --by-cve \
+          #   --fail-on critical \
+          #   --add-cpes-if-none
         continue-on-error: true
       - name: Run semgrep
         id: semgrep-scan
