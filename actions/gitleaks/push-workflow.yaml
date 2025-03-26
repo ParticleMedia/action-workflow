@@ -1,6 +1,9 @@
 name: dependency-check
 on:
-  push: {}
+  push:
+    branches:
+      - master
+      - main
 
 env:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
