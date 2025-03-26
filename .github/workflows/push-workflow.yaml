@@ -1,5 +1,6 @@
 name: dependency-check
 on:
+  pull_request:
   push:
     branches:
       - master
@@ -9,9 +10,9 @@ env:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 jobs:
-  scan:
-    if: github.actor!= 'dependabot-preview[bot]'
-    name: scan
+  check:
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    name: dependency check
     runs-on:
       group: Checks
       labels: checks
@@ -23,7 +24,7 @@ jobs:
       - run: pwd
       - run: ls -la
 
-      - name: Upload Dependency-Check report
+      - name: Upload dependency check report
         env:
           DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
           DEPENDENCY_TRACK_URL: ${{ secrets.DEPENDENCY_TRACK_URL }}
