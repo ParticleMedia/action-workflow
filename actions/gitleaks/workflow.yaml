@@ -20,28 +20,6 @@ jobs:
           fetch-depth: 0
       - run: pwd
       - run: ls -la
-      - name: Run vulnerable code scan
-        id: grype-scan
-        run: |
-          echo "Disabled"
-          # /usr/local/bin/grype dir:. \
-          #   --only-fixed \
-          #   --by-cve \
-          #   --fail-on critical \
-          #   --add-cpes-if-none
-        continue-on-error: true
-      - name: Run semgrep
-        id: semgrep-scan
-        run: |
-          /home/ubuntu/.pyenv/shims/semgrep scan \
-            -j 2 \
-            --use-git-ignore \
-            --exclude="dist*" \
-            --config auto \
-            --timeout 10 \
-            --time
-        timeout-minutes: 3
-        continue-on-error: true
       - name: Run gitleaks
         id: gitleaks-scan
         run: |
@@ -52,6 +30,26 @@ jobs:
             --max-target-megabytes=10 \
             --no-git
         continue-on-error: true
+
+      - name: Upload Dependency-Check report
+        timeout-minutes: 3
+        env:
+          DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          DEPENDENCY_TRACK_URL: ${{ secrets.DEPENDENCY_TRACK_URL }}
+        run: |
+          REPO=${{ github.repository }}
+
+          docker run -u 1000:1000 --rm -e CDXGEN_DEBUG_MODE=debug -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/cyclonedx/cdxgen:master -r /app -o /app/bom.json
+          curl -X POST "https://${DEPENDENCY_TRACK_URL}/api/v1/bom" \
+            -H 'Content-Type: multipart/form-data' \
+            -H "X-Api-Key: ${DEPENDENCY_TRACK_API_KEY}" \
+            -F "autoCreate=true" \
+            -F "projectName=${REPO//\//-}" \
+            -F "projectVersion=${{ github.sha }}" \
+            -F "bom=@bom.json"
+          rm -f bom.json
+        continue-on-error: true
+
       - name: Find Comment
         uses: peter-evans/find-comment@v2
         id: fc
