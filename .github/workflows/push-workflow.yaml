@@ -1,17 +1,14 @@
 name: dependency-check
 on:
   pull_request:
-  push:
-    branches:
-      - master
-      - main
+    types: [closed]
 
 env:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 jobs:
   check:
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    if: github.actor != 'dependabot-preview[bot]'
     name: dependency check
     runs-on:
       group: Checks
@@ -23,21 +20,20 @@ jobs:
           fetch-depth: 0
       - run: pwd
       - run: ls -la
+      - run: printenv
 
       - name: Upload dependency check report
         env:
           DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
           DEPENDENCY_TRACK_URL: ${{ secrets.DEPENDENCY_TRACK_URL }}
         run: |
-          REPO=${{ github.repository }}
-
           docker run -u 1000:1000 --rm -e CDXGEN_DEBUG_MODE=debug -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/cyclonedx/cdxgen:master -r /app -o /app/bom.json
           curl -X POST "https://${DEPENDENCY_TRACK_URL}/api/v1/bom" \
             -H 'Content-Type: multipart/form-data' \
             -H "X-Api-Key: ${DEPENDENCY_TRACK_API_KEY}" \
             -F "autoCreate=true" \
-            -F "projectName=${REPO//\//-}" \
-            -F "projectVersion=${{ github.sha }}" \
+            -F "projectName=${{ github.repository }}" \
+            -F "projectVersion=latest" \
             -F "bom=@bom.json"
           rm -f bom.json
         continue-on-error: true
