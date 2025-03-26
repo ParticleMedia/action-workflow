@@ -26,7 +26,7 @@ jobs:
           DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
           DEPENDENCY_TRACK_URL: ${{ secrets.DEPENDENCY_TRACK_URL }}
         run: |
-          docker run -u 1000:1000 --rm -e CDXGEN_DEBUG_MODE=debug -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/cyclonedx/cdxgen-secure:v11.2.1 -r /app -o /app/bom.json
+          docker run -u 1000:1000 --rm -e CDXGEN_DEBUG_MODE=debug -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/cyclonedx/cdxgen-secure:v11.2.1 cdxgen -r /app -o /app/bom.json
           curl -X POST "https://${DEPENDENCY_TRACK_URL}/api/v1/bom" \
             -H 'Content-Type: multipart/form-data' \
             -H "X-Api-Key: ${DEPENDENCY_TRACK_API_KEY}" \
