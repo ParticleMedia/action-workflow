@@ -61,13 +61,11 @@ jobs:
 
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v3
-        if: ${{ steps.grype-scan.outcome == 'failure' || steps.semgrep-scan.outcome == 'failure' || steps.gitleaks-scan.outcome == 'failure' }}
+        if: ${{ steps.gitleaks-scan.outcome == 'failure' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             Security scan is turned on for this repository.
             Please go to [Actions](https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/actions/workflows/required/ParticleMedia/action-workflow/actions/gitleaks/workflow.yaml) check the findings and fix them.
-            - grype check ${{ steps.grype-scan.outcome }}
-            - semgrep check ${{ steps.semgrep-scan.outcome }}
             - gitleaks check ${{ steps.gitleaks-scan.outcome }}
           reactions: eyes

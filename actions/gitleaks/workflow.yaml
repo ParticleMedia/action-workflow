@@ -31,25 +31,6 @@ jobs:
             --no-git
         continue-on-error: true
 
-      - name: Upload Dependency-Check report
-        timeout-minutes: 3
-        env:
-          DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
-          DEPENDENCY_TRACK_URL: ${{ secrets.DEPENDENCY_TRACK_URL }}
-        run: |
-          REPO=${{ github.repository }}
-
-          docker run -u 1000:1000 --rm -e CDXGEN_DEBUG_MODE=debug -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/cyclonedx/cdxgen:master -r /app -o /app/bom.json
-          curl -X POST "https://${DEPENDENCY_TRACK_URL}/api/v1/bom" \
-            -H 'Content-Type: multipart/form-data' \
-            -H "X-Api-Key: ${DEPENDENCY_TRACK_API_KEY}" \
-            -F "autoCreate=true" \
-            -F "projectName=${REPO//\//-}" \
-            -F "projectVersion=${{ github.sha }}" \
-            -F "bom=@bom.json"
-          rm -f bom.json
-        continue-on-error: true
-
       - name: Find Comment
         uses: peter-evans/find-comment@v2
         id: fc
@@ -60,13 +41,11 @@ jobs:
 
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v3
-        if: ${{ steps.grype-scan.outcome == 'failure' || steps.semgrep-scan.outcome == 'failure' || steps.gitleaks-scan.outcome == 'failure' }}
+        if: ${{ steps.gitleaks-scan.outcome == 'failure' }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             Security scan is turned on for this repository.
             Please go to [Actions](https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/actions/workflows/required/ParticleMedia/action-workflow/actions/gitleaks/workflow.yaml) check the findings and fix them.
-            - grype check ${{ steps.grype-scan.outcome }}
-            - semgrep check ${{ steps.semgrep-scan.outcome }}
             - gitleaks check ${{ steps.gitleaks-scan.outcome }}
           reactions: eyes
