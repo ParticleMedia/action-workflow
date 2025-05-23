@@ -14,8 +14,6 @@ jobs:
       labels: checks
     timeout-minutes: 15
     steps:
-      - run: |
-          chown 1000:1000 -R . || true
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
