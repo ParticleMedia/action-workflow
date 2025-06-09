@@ -1,0 +1,50 @@
+name: soc2-scan
+on:
+  # Scan changed files in PRs (diff-aware scanning):
+  pull_request: {}
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
+jobs:
+  scan:
+    if: github.actor!= 'dependabot-preview[bot]' && github.actor!= 'ParticleJenkins'
+    name: scan
+    runs-on:
+      group: Checks
+      labels: checks
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - run: pwd
+      - run: ls -la
+      - name: Run vulnerable code scan
+        id: grype-scan
+        run: |
+          /usr/local/bin/grype dir:. \
+            --only-fixed \
+            --by-cve \
+            --fail-on critical \
+            --add-cpes-if-none
+        continue-on-error: true
+
+      - name: Find Comment
+        uses: peter-evans/find-comment@v2
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-regex: "Security scan is turned on for this repository.*"
+
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v3
+        if: ${{ steps.grype-scan.outcome == 'failure' }}
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Security scan is turned on for this repository.
+            Please go to [Actions](https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/actions/workflows/required/ParticleMedia/action-workflow/actions/gitleaks/workflow.yaml) check the findings and fix them.
+            - grype check ${{ steps.grype-scan.outcome }}
+          reactions: eyes
