@@ -11,8 +11,8 @@ jobs:
     if: github.actor!= 'dependabot-preview[bot]'
     name: scan
     runs-on:
-      group: Checks
-      labels: checks
+      group: Checks-EKS
+      labels: [eks]
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v3
