@@ -40,7 +40,7 @@ jobs:
         run: |
           REPO=${{ github.repository }}
 
-          docker run -u 1000:1000 --rm -e CDXGEN_DEBUG_MODE=debug -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/cyclonedx/cdxgen:master -r /app -o /app/bom.json
+          docker run -u "$(id -u):$(id -g)" --rm -e CDXGEN_DEBUG_MODE=debug -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/cyclonedx/cdxgen:master -r /app -o /app/bom.json
           curl -X POST "https://${DEPENDENCY_TRACK_URL}/api/v1/bom" \
             -H 'Content-Type: multipart/form-data' \
             -H "X-Api-Key: ${DEPENDENCY_TRACK_API_KEY}" \
